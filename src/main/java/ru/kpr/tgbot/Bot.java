@@ -25,14 +25,25 @@ public class Bot extends TelegramLongPollingCommandBot {
     public Bot () {
         register(new HelloCommand());
         register(new BanCommand());
+        register(new UnbanCommand());
     }
 
     public String getBotUsername() {
-        return "myamazingbot";
+        return "kpr-bot";
     }
 
     public void processNonCommandUpdate(Update update) {
 
+        try {
+            addUserToDb(update);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    private void addUserToDb(Update update) throws TelegramApiException {
         Long chatId = update.getMessage().getChatId();
         User user = update.getMessage().getFrom();
         TgUser tgUser = TgUser.create(user);
@@ -40,39 +51,25 @@ public class Bot extends TelegramLongPollingCommandBot {
 
         try (Connection con = DataSource.getConnection()) {
             DSLContext context = DSL.using(con, SQLDialect.POSTGRES);
-            //TgUserRecord tgUserRecord = context.newRecord(TG_USER, tgUser);
-
             context.insertInto(TG_USER)
                     .set(TG_USER.USERNAME, tgUser.getUsername())
+                    .set(TG_USER.TG_ID, tgUser.getTgId())
                     .set(TG_USER.FIRST_NAME, tgUser.getFirstName())
                     .set(TG_USER.LAST_NAME, tgUser.getLastName())
                     .onDuplicateKeyIgnore()
                     .execute();
-
-            //tgUserRecord.store();
         }
         catch (Exception e) {
             SendMessage answer = new SendMessage();
             answer.setText(e.getMessage());
             answer.setChatId(chatId.toString());
-            try {
-                execute(answer); // Call method to send the message
-            } catch (TelegramApiException e2) {
-                e2.printStackTrace();
-            }
+            execute(answer);
         }
-
-
 
         SendMessage answer = new SendMessage();
         answer.setText("добавил пользователя");
         answer.setChatId(chatId.toString());
-        try {
-            execute(answer); // Call method to send the message
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-
+        execute(answer);
 
     }
 
