@@ -26,6 +26,7 @@ public class Bot extends TelegramLongPollingCommandBot {
         register(new HelloCommand());
         register(new BanCommand());
         register(new UnbanCommand());
+        register(new AddAdminCommand());
     }
 
     public String getBotUsername() {
@@ -56,6 +57,7 @@ public class Bot extends TelegramLongPollingCommandBot {
                     .set(TG_USER.TG_ID, tgUser.getTgId())
                     .set(TG_USER.FIRST_NAME, tgUser.getFirstName())
                     .set(TG_USER.LAST_NAME, tgUser.getLastName())
+                    .set(TG_USER.IS_ADMIN, false)
                     .onDuplicateKeyIgnore()
                     .execute();
         }

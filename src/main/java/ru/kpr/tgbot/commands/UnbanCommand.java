@@ -36,13 +36,12 @@ public class UnbanCommand extends BotCommand {
     public void unBan(AbsSender absSender, User user, Chat chat, String[] arguments) throws TelegramApiException {
 
         Long chatId = chat.getId();
-        String username = arguments[0];
-
         if (arguments == null || arguments.length != 1) {
             Utils.sendMessage(Resources.USERNAME_IS_REQUIRED, chatId.toString(), absSender);
             return;
         }
 
+        String username = arguments[0];
         TgUserRecord tgUserRecord = null;
         try {
             tgUserRecord = Services.getTgUserByUsername(username);

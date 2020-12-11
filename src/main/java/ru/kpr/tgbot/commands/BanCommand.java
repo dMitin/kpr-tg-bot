@@ -55,19 +55,27 @@ public class BanCommand extends BotCommand {
         String username = arguments[0];
 
 
-        TgUserRecord tgUserRecord = null;
+        TgUserRecord bannedTgUser = null;
+        TgUserRecord requestedTgUser = null;
         try {
-            tgUserRecord = Services.getTgUserByUsername(username);
+            requestedTgUser = Services.getTgUserByUsername(user.getUserName());
+            bannedTgUser = Services.getTgUserByUsername(username);
         }
         catch (Exception e) {
             Utils.sendMessage(e.getMessage(), chatId.toString(), absSender);
         }
 
-        System.out.println(tgUserRecord);
+        System.out.println(bannedTgUser);
 
-        if (null != tgUserRecord) {
+        if (!requestedTgUser.getIsAdmin()) {
+            Utils.sendMessage("Пользователь " + user.getUserName() + " не является администратором",
+                    chatId.toString(), absSender);
+            return;
+        }
+
+        if (null != bannedTgUser) {
             RestrictChatMember restrictChatMember = Utils.getRestriction(
-                    tgUserRecord.getTgId(), BESEDKA_CHAT, false);
+                    bannedTgUser.getTgId(), BESEDKA_CHAT, false);
             try {
                 absSender.execute(restrictChatMember);
             } catch (TelegramApiRequestException e) {
