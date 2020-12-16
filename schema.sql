@@ -21,3 +21,27 @@ create index tg_user_username_index
 
 create unique index tg_user_username_uindex
     on tg_user (username);
+
+
+
+create table tg_warning
+(
+    id serial NOT NULL PRIMARY KEY,
+    warning_time timestamp,
+    warned_tg_user serial not null,
+    created_by serial not null,
+    FOREIGN KEY (warned_tg_user) REFERENCES tg_user (id),
+    FOREIGN KEY (created_by) REFERENCES tg_user (id)
+);
+
+create unique index tg_warning_id_uindex
+    on tg_warning (id);
+
+create table tg_ban
+(
+    tg_user_id serial NOT NULL PRIMARY KEY,
+    ban_time timestamp,
+    created_by serial not null,
+    FOREIGN KEY (created_by) REFERENCES tg_user (id),
+    FOREIGN KEY (tg_user_id) REFERENCES tg_user (id) DEFERRABLE INITIALLY DEFERRED
+);
