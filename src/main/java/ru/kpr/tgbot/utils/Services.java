@@ -76,6 +76,15 @@ public class Services {
         }
     }
 
+    public static int unbanTgUser(Integer tgUserId) throws SQLException {
+        try (Connection con = DataSource.getConnection()) {
+            DSLContext jooq = DSL.using(con, SQLDialect.POSTGRES);
+
+            TgBanRecord book = jooq.fetchOne(TG_BAN, TG_BAN.TG_USER_ID.eq(tgUserId));
+            return book.delete();
+        }
+    }
+
     public static Integer createTgUser(TgUser tgUser) throws SQLException {
 
         Record1<Integer> tgId;

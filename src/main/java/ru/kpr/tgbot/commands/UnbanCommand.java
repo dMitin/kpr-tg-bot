@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
+import ru.kpr.tgbot.domain.TgUser;
 import ru.kpr.tgbot.utils.Resources;
 import ru.kpr.tgbot.utils.Services;
 import ru.kpr.tgbot.utils.Utils;
@@ -41,17 +42,38 @@ public class UnbanCommand extends BotCommand {
             return;
         }
 
+
         String username = arguments[0];
-        TgUserRecord tgUserRecord = null;
+        TgUser unbannedTgUser = null;
         try {
-            tgUserRecord = Services.getTgUserByUsername(username);
+            unbannedTgUser = Services.getTgUserAllByUsername(username);
         }
         catch (Exception e) {
             Utils.sendMessage(e.getMessage(), chatId.toString(), absSender);
         }
 
-        RestrictChatMember restrictChatMember = Utils.getRestriction(tgUserRecord.getTgId(), BESEDKA_CHAT, true);
+
+        if (unbannedTgUser == null) {
+            Utils.sendMessage("Не могу найти пользователя " + username,
+                    chatId.toString(), absSender);
+            return;
+        }
+        if (unbannedTgUser.getBan() == null) {
+            Utils.sendMessage("Пользователь " + username + " не забанен",
+                    chatId.toString(), absSender);
+            return;
+        }
+
+        RestrictChatMember restrictChatMember = Utils.getRestriction(unbannedTgUser.getTgId(), BESEDKA_CHAT, true);
         absSender.execute(restrictChatMember);
+
+        try {
+            Services.unbanTgUser(unbannedTgUser.getId());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            Utils.sendMessage(e.getMessage(), chatId.toString(), absSender);
+        }
 
     }
 }
